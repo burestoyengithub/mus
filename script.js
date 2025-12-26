@@ -5,12 +5,13 @@
 // Asegúrate de haber creado un proyecto en Firebase y copiado esta config
 // Reemplaza con la tuya
 const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_PROYECTO.firebaseapp.com",
-    projectId: "TU_PROYECTO",
-    storageBucket: "TU_PROYECTO.appspot.com",
-    messagingSenderId: "TU_MENSAJE_ID",
-    appId: "TU_APP_ID"
+  apiKey: "AIzaSyAGgm0KD99KjMb1AQZXZ22I0ey2vCMnCfU",
+  authDomain: "ligamus-c7ebe.firebaseapp.com",
+  projectId: "ligamus-c7ebe",
+  storageBucket: "ligamus-c7ebe.firebasestorage.app",
+  messagingSenderId: "747328486638",
+  appId: "1:747328486638:web:b9deb3fcbc7461872387ff",
+  measurementId: "G-YS6MDHTDDM"
 };
 
 // Inicializar Firebase
