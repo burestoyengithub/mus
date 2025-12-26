@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liga Oficial de Mus</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Liga Oficial de Mus</h1>
+    <p>Temporada 2025</p>
+  </header>
+
+  <main>
+    <!-- Formulario para añadir partida -->
+    <section id="formulario">
+      <h2>Añadir partida</h2>
+      <form id="partida-form">
+        <label>
+          Jugadores Pareja A (separados por coma):
+          <input type="text" id="jugadoresA" required>
+        </label><br><br>
+
+        <label>
+          Jugadores Pareja B (separados por coma):
+          <input type="text" id="jugadoresB" required>
+        </label><br><br>
+
+        <label>
+          Ganador:
+          <select id="ganador" required>
+            <option value="A">Pareja A</option>
+            <option value="B">Pareja B</option>
+          </select>
+        </label><br><br>
+
+        <label>
+          Órdago:
+          <input type="checkbox" id="ordago">
+        </label><br><br>
+
+        <button type="submit">Guardar partida</button>
+      </form>
+    </section>
+
+    <!-- Tabla de clasificación -->
+    <section id="clasificacion">
+      <h2>Clasificación</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Pareja / Jugador</th>
+            <th>Puntos</th>
+            <th>Victorias</th>
+            <th>Órdagos</th>
+          </tr>
+        </thead>
+        <tbody id="clasificacion-body">
+          <!-- Aquí JS insertará filas -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Tabla de histórico -->
+    <section id="historico">
+      <h2>Histórico de partidas</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Pareja A</th>
+            <th>Pareja B</th>
+            <th>Ganador</th>
+            <th>Órdago</th>
+          </tr>
+        </thead>
+        <tbody id="historico-body">
+          <!-- Aquí JS insertará filas -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <p>Escanea el QR para registrar partidas desde cualquier dispositivo.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
