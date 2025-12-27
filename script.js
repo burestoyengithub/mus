@@ -55,7 +55,7 @@ function cargarJugadores() {
 }
 
 // ==============================
-// Evitar duplicados
+// Evitar duplicados en selects
 function actualizarSelects() {
   const valores = selects.map(s => s.value).filter(v => v);
   selects.forEach(sel => {
@@ -198,18 +198,50 @@ function renderListaJugadores() {
     });
     div.appendChild(btnEliminar);
 
-    // Botón modificar
+    // Botón modificar con actualización de partidas
     const btnModificar = document.createElement("button");
     btnModificar.textContent = "Modificar";
-    btnModificar.addEventListener("click", ()=>{
+    btnModificar.addEventListener("click", async () => {
       const nuevoNombre = prompt("Introduce el nuevo nombre:", j.nombre);
-      if(nuevoNombre && nuevoNombre.trim() !== "") {
-        db.collection("jugadores").where("nombre","==",nuevoNombre.trim()).get()
-          .then(snapshot=>{
-            if(!snapshot.empty) alert("Ya existe un jugador con ese nombre");
-            else db.collection("jugadores").doc(j.id).update({ nombre: nuevoNombre.trim() });
+      if (!nuevoNombre || nuevoNombre.trim() === "") return;
+
+      // Comprobar que no exista otro jugador con ese nombre
+      const snapshot = await db.collection("jugadores").where("nombre", "==", nuevoNombre.trim()).get();
+      if (!snapshot.empty) return alert("Ya existe un jugador con ese nombre");
+
+      const nombreAntiguo = j.nombre;
+      const idJugador = j.id;
+
+      // 1️⃣ Actualizar nombre del jugador
+      await db.collection("jugadores").doc(idJugador).update({ nombre: nuevoNombre.trim() });
+
+      // 2️⃣ Actualizar partidas existentes
+      const partidasSnap = await db.collection("partidas").get();
+      partidasSnap.docs.forEach(doc => {
+        const partida = doc.data();
+        let modificado = false;
+
+        // Pareja A
+        partida.jugadoresA = partida.jugadoresA.map(x => {
+          if (x === nombreAntiguo) { modificado = true; return nuevoNombre.trim(); }
+          return x;
+        });
+
+        // Pareja B
+        partida.jugadoresB = partida.jugadoresB.map(x => {
+          if (x === nombreAntiguo) { modificado = true; return nuevoNombre.trim(); }
+          return x;
+        });
+
+        if (modificado) {
+          doc.ref.update({
+            jugadoresA: partida.jugadoresA,
+            jugadoresB: partida.jugadoresB
           });
-      }
+        }
+      });
+
+      alert(`Nombre del jugador actualizado a "${nuevoNombre.trim()}" y partidas modificadas`);
     });
     div.appendChild(btnModificar);
 
