@@ -1,150 +1,226 @@
-// ========================================
-// 1️⃣ CONFIGURACIÓN DE FIREBASE
-// ========================================
-
-// Asegúrate de haber creado un proyecto en Firebase y copiado esta config
-// Reemplaza con la tuya
+// 🔥 FIREBASE CONFIG
 const firebaseConfig = {
-  apiKey: "AIzaSyAGgm0KD99KjMb1AQZXZ22I0ey2vCMnCfU",
+  apiKey: "TU_API_KEY",
   authDomain: "ligamus-c7ebe.firebaseapp.com",
   projectId: "ligamus-c7ebe",
-  storageBucket: "ligamus-c7ebe.firebasestorage.app",
+  storageBucket: "ligamus-c7ebe.appspot.com",
   messagingSenderId: "747328486638",
   appId: "1:747328486638:web:b9deb3fcbc7461872387ff",
   measurementId: "G-YS6MDHTDDM"
 };
 
-// Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ========================================
-// 2️⃣ SELECTORES DE ELEMENTOS
-// ========================================
-const form = document.getElementById('partida-form');
-const jugadoresAInput = document.getElementById('jugadoresA');
-const jugadoresBInput = document.getElementById('jugadoresB');
-const ganadorInput = document.getElementById('ganador');
-const ordagoInput = document.getElementById('ordago');
+// SELECTORES
+const form = document.getElementById("partida-form");
+const ganadorInput = document.getElementById("ganador");
+const ordagoInput = document.getElementById("ordago");
+const historicoBody = document.getElementById("historico-body");
+const clasificacionBody = document.getElementById("clasificacion-body");
+const listaJugadoresDiv = document.getElementById("lista-jugadores");
 
-const clasificacionBody = document.getElementById('clasificacion-body');
-const historicoBody = document.getElementById('historico-body');
+const selects = ["jugadorA1","jugadorA2","jugadorB1","jugadorB2"].map(id => document.getElementById(id));
 
-// ========================================
-// 3️⃣ FUNCIONES AUXILIARES
-// ========================================
+let jugadores = [];
 
-// Calcular puntuación según reglas básicas
-function calcularPuntos(partida) {
-    let puntosA = 0;
-    let puntosB = 0;
+// ==============================
+// CARGAR JUGADORES
+function cargarJugadores() {
+  db.collection("jugadores").orderBy("nombre").onSnapshot(snapshot => {
+    jugadores = snapshot.docs.map(doc => ({
+      id: doc.id,
+      nombre: doc.data().nombre,
+      activo: doc.data().activo ?? true
+    }));
 
-    if (partida.ganador === "A") {
-        puntosA += 3;
-        if (partida.ordago) puntosA += 1;
-    } else {
-        puntosB += 3;
-        if (partida.ordago) puntosB += 1;
-    }
+    const activos = jugadores.filter(j => j.activo);
 
-    return { puntosA, puntosB };
-}
-
-// ========================================
-// 4️⃣ FUNCIONES DE RENDERIZADO
-// ========================================
-
-// Renderiza histórico
-function renderHistorico(partidas) {
-    historicoBody.innerHTML = "";
-    partidas.forEach(p => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${p.fecha.toDate().toLocaleDateString()}</td>
-            <td>${p.jugadoresA.join(", ")}</td>
-            <td>${p.jugadoresB.join(", ")}</td>
-            <td>${p.ganador}</td>
-            <td>${p.ordago ? "Sí" : "No"}</td>
-        `;
-        historicoBody.appendChild(tr);
-    });
-}
-
-// Renderiza clasificación
-function renderClasificacion(partidas) {
-    const puntuacion = {};
-
-    partidas.forEach(p => {
-        const { puntosA, puntosB } = calcularPuntos(p);
-
-        p.jugadoresA.forEach(j => {
-            if (!puntuacion[j]) puntuacion[j] = { puntos: 0, victorias: 0, ordagos: 0 };
-            puntuacion[j].puntos += puntosA;
-            if (p.ganador === "A") puntuacion[j].victorias += 1;
-            if (p.ordago && p.ganador === "A") puntuacion[j].ordagos += 1;
-        });
-
-        p.jugadoresB.forEach(j => {
-            if (!puntuacion[j]) puntuacion[j] = { puntos: 0, victorias: 0, ordagos: 0 };
-            puntuacion[j].puntos += puntosB;
-            if (p.ganador === "B") puntuacion[j].victorias += 1;
-            if (p.ordago && p.ganador === "B") puntuacion[j].ordagos += 1;
-        });
+    // Llenar selects
+    selects.forEach(sel => {
+      const valorActual = sel.value;
+      sel.innerHTML = '<option value="">Selecciona</option>';
+      activos.forEach(j => {
+        const option = document.createElement("option");
+        option.value = j.nombre;
+        option.textContent = j.nombre;
+        sel.appendChild(option);
+      });
+      sel.value = valorActual;
     });
 
-    // Ordenar por puntos descendente
-    const jugadoresOrdenados = Object.entries(puntuacion).sort((a, b) => b[1].puntos - a[1].puntos);
+    actualizarSelects();
+    renderListaJugadores();
+  });
+}
 
-    clasificacionBody.innerHTML = "";
-    jugadoresOrdenados.forEach(([jugador, stats]) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${jugador}</td>
-            <td>${stats.puntos}</td>
-            <td>${stats.victorias}</td>
-            <td>${stats.ordagos}</td>
-        `;
-        clasificacionBody.appendChild(tr);
+// ==============================
+// Evitar duplicados
+function actualizarSelects() {
+  const valores = selects.map(s => s.value).filter(v => v);
+  selects.forEach(sel => {
+    Array.from(sel.options).forEach(opt => {
+      if(opt.value && opt.value !== sel.value) opt.disabled = valores.includes(opt.value);
     });
+  });
 }
 
-// ========================================
-// 5️⃣ OBTENER PARTIDAS DE FIRESTORE
-// ========================================
-function obtenerPartidas() {
-    db.collection("partidas")
-        .orderBy("fecha", "desc")
-        .onSnapshot(snapshot => {
-            const partidas = snapshot.docs.map(doc => doc.data());
-            renderHistorico(partidas);
-            renderClasificacion(partidas);
-        });
-}
+cargarJugadores();
 
-// ========================================
-// 6️⃣ AÑADIR NUEVA PARTIDA
-// ========================================
-form.addEventListener("submit", e => {
-    e.preventDefault();
+// ==============================
+// NUEVO JUGADOR
+const jugadorForm = document.getElementById("jugador-form");
+const nuevoJugadorInput = document.getElementById("nuevoJugador");
 
-    const nuevaPartida = {
-        fecha: new Date(),
-        jugadoresA: jugadoresAInput.value.split(",").map(s => s.trim()),
-        jugadoresB: jugadoresBInput.value.split(",").map(s => s.trim()),
-        ganador: ganadorInput.value,
-        ordago: ordagoInput.checked
-    };
+jugadorForm.addEventListener("submit", e => {
+  e.preventDefault();
+  const nombre = nuevoJugadorInput.value.trim();
+  if (!nombre) return;
 
-    db.collection("partidas").add(nuevaPartida)
-        .then(() => {
-            form.reset();
-        })
-        .catch(err => {
-            console.error("Error al guardar partida:", err);
-        });
+  db.collection("jugadores").where("nombre","==",nombre).get()
+    .then(snapshot => {
+      if (!snapshot.empty) alert("El jugador ya existe");
+      else db.collection("jugadores").add({ nombre, activo:true });
+      nuevoJugadorInput.value = "";
+    });
 });
 
-// ========================================
-// 7️⃣ INICIALIZACIÓN
-// ========================================
-obtenerPartidas();
+// ==============================
+// AÑADIR PARTIDA
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  const jugadoresA = [selects[0].value, selects[1].value];
+  const jugadoresB = [selects[2].value, selects[3].value];
+
+  if (jugadoresA.includes("") || jugadoresB.includes("")) return alert("Debes seleccionar todos los jugadores");
+  if (jugadoresA.some(j => jugadoresB.includes(j))) return alert("Un jugador no puede estar en ambas parejas");
+
+  const partida = {
+    fecha: new Date(),
+    jugadoresA,
+    jugadoresB,
+    ganador: ganadorInput.value,
+    ordago: ordagoInput.checked
+  };
+
+  db.collection("partidas").add(partida).then(() => {
+    selects.forEach(s => s.value = "");
+    form.reset();
+    cargarJugadores();
+  });
+});
+
+// ==============================
+// HISTÓRICO
+function renderHistorico(partidas) {
+  historicoBody.innerHTML = "";
+  partidas.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.fecha.toDate().toLocaleDateString()}</td>
+      <td>${p.jugadoresA.join(", ")}</td>
+      <td>${p.jugadoresB.join(", ")}</td>
+      <td>${p.ganador}</td>
+      <td>${p.ordago ? "Sí" : "No"}</td>
+      <td><button class="btn-eliminar" data-id="${p.id}">Eliminar</button></td>
+    `;
+    historicoBody.appendChild(tr);
+  });
+
+  document.querySelectorAll(".btn-eliminar").forEach(btn=>{
+    btn.addEventListener("click", e=>{
+      const id = e.target.dataset.id;
+      if(confirm("¿Eliminar esta partida?")) db.collection("partidas").doc(id).delete();
+    });
+  });
+}
+
+// ==============================
+// CLASIFICACIÓN POR % VICTORIAS Y ÓRDAGOS
+function renderClasificacion(partidas) {
+  const stats = {};
+  partidas.forEach(p => {
+    // Pareja A
+    p.jugadoresA.forEach(j => {
+      stats[j] ??= { victorias:0, derrotas:0, ordagos:0 };
+      if(p.ganador==="A") {
+        stats[j].victorias++;
+        if(p.ordago) stats[j].ordagos++;
+      } else stats[j].derrotas++;
+    });
+    // Pareja B
+    p.jugadoresB.forEach(j => {
+      stats[j] ??= { victorias:0, derrotas:0, ordagos:0 };
+      if(p.ganador==="B") {
+        stats[j].victorias++;
+        if(p.ordago) stats[j].ordagos++;
+      } else stats[j].derrotas++;
+    });
+  });
+
+  clasificacionBody.innerHTML = "";
+  Object.entries(stats)
+    .map(([jugador,s]) => {
+      const total = s.victorias + s.derrotas;
+      const porcentaje = total ? (s.victorias/total*100).toFixed(1) : 0;
+      return { jugador, victorias:s.victorias, derrotas:s.derrotas, porcentaje, ordagos: s.ordagos };
+    })
+    .sort((a,b)=>b.porcentaje - a.porcentaje)
+    .forEach(s=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${s.jugador}</td>
+        <td>${s.victorias}</td>
+        <td>${s.derrotas}</td>
+        <td>${s.porcentaje}%</td>
+        <td>${s.ordagos}</td>
+      `;
+      clasificacionBody.appendChild(tr);
+    });
+}
+
+// ==============================
+// LISTA JUGADORES (al final) CON ELIMINAR/ACTIVAR/MODIFICAR
+function renderListaJugadores() {
+  listaJugadoresDiv.innerHTML = "";
+  jugadores.forEach(j=>{
+    const div = document.createElement("div");
+    div.textContent = `${j.nombre} (${j.activo ? "Activo" : "Inactivo"})`;
+
+    // Botón eliminar/activar
+    const btnEliminar = document.createElement("button");
+    btnEliminar.textContent = j.activo ? "Eliminar" : "Activar";
+    btnEliminar.addEventListener("click", ()=>{
+      const accion = j.activo ? "Eliminar" : "Activar";
+      if(confirm(`${accion} jugador ${j.nombre}?`)) {
+        db.collection("jugadores").doc(j.id).update({ activo: !j.activo });
+      }
+    });
+    div.appendChild(btnEliminar);
+
+    // Botón modificar
+    const btnModificar = document.createElement("button");
+    btnModificar.textContent = "Modificar";
+    btnModificar.addEventListener("click", ()=>{
+      const nuevoNombre = prompt("Introduce el nuevo nombre:", j.nombre);
+      if(nuevoNombre && nuevoNombre.trim() !== "") {
+        db.collection("jugadores").where("nombre","==",nuevoNombre.trim()).get()
+          .then(snapshot=>{
+            if(!snapshot.empty) alert("Ya existe un jugador con ese nombre");
+            else db.collection("jugadores").doc(j.id).update({ nombre: nuevoNombre.trim() });
+          });
+      }
+    });
+    div.appendChild(btnModificar);
+
+    listaJugadoresDiv.appendChild(div);
+  });
+}
+
+// ==============================
+// SUSCRIPCIONES FIRESTORE
+db.collection("partidas").orderBy("fecha","desc").onSnapshot(snapshot=>{
+  const partidas = snapshot.docs.map(doc=> ({...doc.data(), id: doc.id}) );
+  renderHistorico(partidas);
+  renderClasificacion(partidas);
+});

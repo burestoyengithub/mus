@@ -5,66 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Liga Oficial de Mus</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
+
 <body>
   <header>
-    <h1>Liga Mus</h1>
+    <h1>Liga Oficial de Mus</h1>
     <p>Temporada 2025</p>
   </header>
 
   <main>
-    <!-- Formulario para añadir partida -->
-    <section id="formulario">
+    <!-- AÑADIR PARTIDA -->
+    <section>
       <h2>Añadir partida</h2>
       <form id="partida-form">
-        <label>
-          Jugadores Pareja A (separados por coma):
-          <input type="text" id="jugadoresA" required>
-        </label><br><br>
+        <div class="parejas">
+          <div class="pareja">
+            <h4>Pareja A</h4>
+            <select id="jugadorA1"></select>
+            <select id="jugadorA2"></select>
+          </div>
+          <div class="pareja">
+            <h4>Pareja B</h4>
+            <select id="jugadorB1"></select>
+            <select id="jugadorB2"></select>
+          </div>
+        </div>
 
         <label>
-          Jugadores Pareja B (separados por coma):
-          <input type="text" id="jugadoresB" required>
-        </label><br><br>
-
-        <label>
-          Ganador:
-          <select id="ganador" required>
-            <option value="A">Pareja A</option>
-            <option value="B">Pareja B</option>
-          </select>
-        </label><br><br>
-
-        <label>
-          Órdago:
           <input type="checkbox" id="ordago">
-        </label><br><br>
+          Órdago
+        </label>
 
-        <button type="submit">Guardar partida</button>
+        <label>Ganador:</label>
+        <select id="ganador">
+          <option value="A">Pareja A</option>
+          <option value="B">Pareja B</option>
+        </select>
+
+        <button type="submit">Añadir partida</button>
       </form>
     </section>
 
-    <!-- Tabla de clasificación -->
-    <section id="clasificacion">
+    <!-- AÑADIR JUGADOR -->
+    <section>
+      <h2>Añadir jugador</h2>
+      <form id="jugador-form">
+        <input type="text" id="nuevoJugador" placeholder="Nombre del jugador" required>
+        <button type="submit">Añadir jugador</button>
+      </form>
+    </section>
+
+    <!-- CLASIFICACIÓN -->
+    <section>
       <h2>Clasificación</h2>
       <table>
         <thead>
           <tr>
-            <th>Pareja / Jugador</th>
-            <th>Puntos</th>
+            <th>Jugador</th>
             <th>Victorias</th>
-            <th>Órdagos</th>
+            <th>Derrotas</th>
+            <th>% Victoria</th>
+            <th>Órdagos ganados</th>
           </tr>
         </thead>
-        <tbody id="clasificacion-body">
-          <!-- Aquí JS insertará filas -->
-        </tbody>
+        <tbody id="clasificacion-body"></tbody>
       </table>
     </section>
 
-    <!-- Tabla de histórico -->
-    <section id="historico">
-      <h2>Histórico de partidas</h2>
+    <!-- HISTÓRICO -->
+    <section>
+      <h2>Histórico</h2>
       <table>
         <thead>
           <tr>
@@ -73,22 +87,24 @@
             <th>Pareja B</th>
             <th>Ganador</th>
             <th>Órdago</th>
+            <th>Eliminar</th>
           </tr>
         </thead>
-        <tbody id="historico-body">
-          <!-- Aquí JS insertará filas -->
-        </tbody>
+        <tbody id="historico-body"></tbody>
       </table>
     </section>
+
+    <!-- JUGADORES ACTIVOS / INACTIVOS -->
+    <section>
+      <h2>Gestión de jugadores (activos/inactivos)</h2>
+      <div id="lista-jugadores"></div>
+    </section>
+
   </main>
 
   <footer>
-    <p>Escanea el QR para registrar partidas desde cualquier dispositivo.</p>
+    <p>Escanea el QR para registrar partidas</p>
   </footer>
-    <!-- Firebase App -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <!-- Firebase Firestore -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script src="script.js"></script>
 </body>
