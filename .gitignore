@@ -1,0 +1,6 @@
+mi_entorno_absurdo/
+__pycache__/
+.vscode/
+.DS_Store
+guardado_local_data.js
+migrar_partidas.js
